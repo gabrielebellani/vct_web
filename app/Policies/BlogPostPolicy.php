@@ -61,6 +61,6 @@ class BlogPostPolicy
      */
     public function forceDelete(User $user, BlogPost $blogPost): bool
     {
-        return false;
+        return ($user->isPress() || $user->isAdmin()) && $user->id === $blogPost->created_by;
     }
 }

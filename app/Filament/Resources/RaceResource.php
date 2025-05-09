@@ -7,6 +7,8 @@ use App\Constants\RaceClasses;
 use App\Constants\RaceType;
 use App\Filament\Resources\RaceResource\Pages;
 use App\Filament\Resources\RaceResource\RelationManagers;
+use App\Helpers\BlogPostsRacesHelper;
+use App\Models\BlogPost;
 use App\Models\Race;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -14,14 +16,17 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 class RaceResource extends Resource
 {
     protected static ?string $model = Race::class;
     protected static ?string $navigationLabel = 'Gare';
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'lucide-bike';
 
 
     public static function form(Form $form): Form
@@ -72,26 +77,29 @@ class RaceResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('description')
+                    ->label('Nome')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('date')
+                    ->label('Data')
                     ->date()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('location')
+                    ->label('Luogo')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('classes'),
-                Tables\Columns\TextColumn::make('age'),
-                Tables\Columns\TextColumn::make('main_type'),
-                Tables\Columns\TextColumn::make('sub_type'),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('class')
+                    ->label('Classe')
+                    ->formatStateUsing(fn(string $state): string => RaceClasses::getLabel($state))
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('age')
+                    ->label('Categoria')
+                    ->formatStateUsing(fn(string $state): string => RaceAges::getLabelFromString($state))
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('main_type')
+                    ->formatStateUsing(fn(string $state): string => RaceType::getLabel($state))
+                    ->label('Disciplina'),
+                Tables\Columns\TextColumn::make('sub_type')
+                    ->formatStateUsing(fn(string $state): string => RaceType::getLabel($state))
+                    ->label('Specialità'),
             ])
             ->filters([
                 //
@@ -101,7 +109,8 @@ class RaceResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->disabled(fn (?Collection $records): bool => !is_null($records) && !BlogPostsRacesHelper::racesHavePosts($records)),
                 ]),
             ]);
     }
@@ -120,5 +129,10 @@ class RaceResource extends Resource
             'create' => Pages\CreateRace::route('/create'),
             'edit' => Pages\EditRace::route('/{record}/edit'),
         ];
+    }
+
+    public static function canDelete(Model $race): bool
+    {
+        return !BlogPostsRacesHelper::raceHasPosts($race->id);
     }
 }

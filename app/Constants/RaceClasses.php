@@ -26,4 +26,9 @@ class RaceClasses
         ];
     }
 
+    public static function getLabel(string $state): string
+    {
+        return self::getLabeledClasses()[$state] ?? $state;
+    }
+
 }

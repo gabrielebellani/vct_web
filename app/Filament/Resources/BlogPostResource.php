@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\BlogPostResource\Pages;
 use App\Filament\Resources\BlogPostResource\RelationManagers;
 use App\Models\BlogPost;
+use App\Policies\BlogPostPolicy;
 use Filament\Forms;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Form;
@@ -12,7 +13,10 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
@@ -59,16 +63,31 @@ class BlogPostResource extends Resource
                 Tables\Columns\TextColumn::make('user.name')
                     ->label('Autore')
                     ->formatStateUsing(fn(string $state): string => ucfirst($state)),
+                Tables\Columns\TextColumn::make('races')
+                    ->label('Gare')
+                    ->formatStateUsing(fn($state): string => dump('he')),
             ])
             ->filters([
                 //
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\ViewAction::make()
+                    ->form([
+                        Forms\Components\TextInput::make('title')
+                            ->label('Titolo'),
+                        Forms\Components\View::make('filament.components.blog-post-html')
+                            ->label('Contenuto')
+                            ->columnSpanFull(),
+                        Forms\Components\Toggle::make('draft')
+                            ->label('Bozza'),
+                    ])
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->disabled(fn(?Collection $records): bool => $records && ($records->count() !== $records->where('created_by', auth()->user()->id)->count())
+                        ),
                 ]),
             ]);
     }

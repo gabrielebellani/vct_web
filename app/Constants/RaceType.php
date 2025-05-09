@@ -41,7 +41,7 @@ class RaceType
         ...self::SUB_ROAD_TYPES,
     ];
 
-    public static function getLabeledMainTypes()
+    public static function getLabeledMainTypes(): array
     {
         return [
             self::MAIN_MTB => 'MTB',
@@ -49,7 +49,7 @@ class RaceType
         ];
     }
 
-    public static function getLabeledSubTypes()
+    public static function getLabeledSubTypes(): array
     {
         return [
             self::SUB_MTB_XCO => 'XCO',
@@ -61,6 +61,11 @@ class RaceType
             self::SUB_ROAD_LINE => 'In linea',
             self::SUB_ROAD_TT => 'Cronometro',
         ];
+    }
+
+    public static function getLabel(string $type): string
+    {
+        return self::getLabeledMainTypes()[$type] ?? self::getLabeledSubTypes()[$type];
     }
 
 }

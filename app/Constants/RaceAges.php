@@ -26,4 +26,18 @@ class RaceAges
         ];
     }
 
+    public static function getLabel(array|string $value): string
+    {
+        if(is_array($value)) {
+            return implode(', ', array_map([self::class, 'getLabel'], $value));
+        }
+
+        return self::getLabeledAges()[$value] ?? $value;
+    }
+
+    public static function getLabelFromString(string $values): string
+    {
+        return self::getLabel(explode(', ', $values));
+    }
+
 }
