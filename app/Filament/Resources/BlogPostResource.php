@@ -13,11 +13,13 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Str;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
 class BlogPostResource extends Resource
 {
     protected static ?string $model = BlogPost::class;
+    protected static ?string $navigationLabel = 'Articoli';
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
@@ -52,8 +54,11 @@ class BlogPostResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('title')->label('Titolo'),
                 Tables\Columns\TextColumn::make('draft')->label('Stato')
-                    ->formatStateUsing(fn (string $state): string => $state ? 'Bozza' : 'Pubblicato'),
+                    ->formatStateUsing(fn(string $state): string => $state ? 'Bozza' : 'Pubblicato'),
                 Tables\Columns\TextColumn::make('created_at')->label('Data di creazione')->dateTime('d F Y - H:i'),
+                Tables\Columns\TextColumn::make('user.name')
+                    ->label('Autore')
+                    ->formatStateUsing(fn(string $state): string => ucfirst($state)),
             ])
             ->filters([
                 //

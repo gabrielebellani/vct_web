@@ -12,6 +12,7 @@ use Illuminate\Contracts\View\View;
 class ListBlogPosts extends ListRecords
 {
     protected static string $resource = BlogPostResource::class;
+    protected static ?string $title = 'Articoli';
 
     protected function getHeaderActions(): array
     {
