@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('title');
             $table->text('body');
+            $table->string('cover');
             $table->boolean('draft')->default(true);
             $table->json('images')->nullable();
             $table->foreignId('created_by');
