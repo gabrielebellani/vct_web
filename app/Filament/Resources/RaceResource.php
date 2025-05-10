@@ -14,6 +14,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 
@@ -133,5 +134,26 @@ class RaceResource extends Resource
     public static function canDelete(Model $record): bool
     {
         return !BlogPostsRacesHelper::raceHasPosts($record->id);
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return Race::query()
+            ->orderByRaw("
+            CASE 
+                WHEN date >= CURDATE() THEN 0 
+                ELSE 1 
+            END
+        ")
+            ->orderByRaw("
+            CASE 
+                WHEN date >= CURDATE() THEN date 
+            END ASC
+        ")
+            ->orderByRaw("
+            CASE 
+                WHEN date < CURDATE() THEN date 
+            END DESC
+        ");
     }
 }
