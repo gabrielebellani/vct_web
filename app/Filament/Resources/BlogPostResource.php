@@ -2,8 +2,11 @@
 
 namespace App\Filament\Resources;
 
+use App\Constants\RaceAges;
 use App\Filament\Resources\BlogPostResource\Pages;
+use App\Helpers\BlogPostsRacesHelper;
 use App\Models\BlogPost;
+use Carbon\Carbon;
 use Filament\Forms;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
@@ -11,6 +14,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 
 class BlogPostResource extends Resource
@@ -46,7 +50,14 @@ class BlogPostResource extends Resource
                     ->label('Gare correlate')
                     ->multiple()
                     ->relationship('races', 'name')
-                    ->searchable()
+                    ->formatStateUsing(fn($state) => $state)
+                    ->searchable(['name', 'location'])
+                    ->getOptionLabelFromRecordUsing(
+                        function (Model $record) {
+                            $date = Carbon::parse($record->date)->locale('it');
+                            $ages = RaceAges::getLabel($record->age);
+                            return "{$record->name} ({$record->location} del {$date->translatedFormat('d F Y')}) [$ages]";
+                        })
                     ->preload()
             ]);
     }
@@ -64,7 +75,8 @@ class BlogPostResource extends Resource
                     ->formatStateUsing(fn(string $state): string => ucfirst($state)),
                 Tables\Columns\TextColumn::make('races')
                     ->label('Gare')
-                    ->formatStateUsing(fn($state): string => dump('he')),
+                    ->formatStateUsing(fn(string $state): string => BlogPostsRacesHelper::getRacesInfoFromCollectionString($state))
+                    ->view('filament.components.blog-post-race-column')
             ])
             ->filters([
                 //
