@@ -3,22 +3,15 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\BlogPostResource\Pages;
-use App\Filament\Resources\BlogPostResource\RelationManagers;
 use App\Models\BlogPost;
-use App\Policies\BlogPostPolicy;
 use Filament\Forms;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Str;
-use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
 class BlogPostResource extends Resource
 {
@@ -48,7 +41,13 @@ class BlogPostResource extends Resource
                     ->disk(env('FILESYSTEM_DISK'))
                     ->preserveFilenames()
                     ->required()
-                    ->label('Immagine di copertina')
+                    ->label('Immagine di copertina'),
+                Select::make('races')
+                    ->label('Gare correlate')
+                    ->multiple()
+                    ->relationship('races', 'name')
+                    ->searchable()
+                    ->preload()
             ]);
     }
 
