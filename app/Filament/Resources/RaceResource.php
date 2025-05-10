@@ -6,20 +6,16 @@ use App\Constants\RaceAges;
 use App\Constants\RaceClasses;
 use App\Constants\RaceType;
 use App\Filament\Resources\RaceResource\Pages;
-use App\Filament\Resources\RaceResource\RelationManagers;
 use App\Helpers\BlogPostsRacesHelper;
-use App\Models\BlogPost;
 use App\Models\Race;
+use Carbon\Carbon;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 
 class RaceResource extends Resource
 {
@@ -81,7 +77,10 @@ class RaceResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('date')
                     ->label('Data')
-                    ->date()
+                    ->date('d F Y')
+                    ->icon(fn($state): string => Carbon::parse($state)->isNowOrFuture() ? 'lucide-calendar-clock' : 'lucide-history')
+                    ->iconColor(fn($state): string => Carbon::parse($state)->isNowOrFuture() ? 'info' : 'gray')
+                    ->color(fn($state): string => Carbon::parse($state)->isNowOrFuture() ? 'info' : 'gray')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('location')
                     ->label('Luogo')
@@ -131,8 +130,8 @@ class RaceResource extends Resource
         ];
     }
 
-    public static function canDelete(Model $race): bool
+    public static function canDelete(Model $record): bool
     {
-        return !BlogPostsRacesHelper::raceHasPosts($race->id);
+        return !BlogPostsRacesHelper::raceHasPosts($record->id);
     }
 }
